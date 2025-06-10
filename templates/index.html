@@ -9,14 +9,15 @@
     <style>
         body {
             padding-top: 40px;
-            background-color: #f8f9fa;
+            background: linear-gradient(to right, #e0eafc, #cfdef3);
+            font-family: 'Segoe UI', sans-serif;
         }
         .container {
             max-width: 900px;
             background: white;
             padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
         }
         .header {
             margin-bottom: 30px;
@@ -28,18 +29,27 @@
         .visible {
             display: block !important;
         }
+        ul.skills-list {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
         footer {
             margin-top: 50px;
             text-align: center;
             color: #777;
+        }
+        .section-title {
+            margin-top: 20px;
+            font-weight: 600;
+            font-size: 1.1rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header text-center">
-            <h1 class="mb-3">Resume Parser App</h1>
-            <p class="text-muted">Upload your resume (PDF only) to extract contact details and skills.</p>
+            <h1 class="mb-3 text-primary">Resume Parser</h1>
+            <p class="text-muted">From PDF to insights in one click.</p>
         </div>
 
         <form method="POST" enctype="multipart/form-data" class="mb-4">
@@ -47,27 +57,37 @@
                 <label for="resume" class="form-label">Upload a Resume (PDF only):</label>
                 <input class="form-control" type="file" id="resume" name="resume" accept="application/pdf" required />
             </div>
-            <button type="submit" class="btn btn-primary">Upload & Parse</button>
+            <button type="submit" class="btn btn-primary w-100">Upload & Parse</button>
         </form>
 
         {% if extracted %}
         <div class="alert alert-success" role="alert">
             <h4 class="alert-heading">Extracted Information</h4>
-            <ul class="mb-0">
-                <li><strong>Name:</strong> {{ extracted.Name }}</li>
-                <li><strong>Email:</strong> {{ extracted.Email }}</li>
-                <li><strong>Phone:</strong> {{ extracted.Phone }}</li>
-                <li><strong>Skills:</strong> {{ extracted.Skills }}</li>
-                <li><strong>Experience:</strong> {{ extracted.Experience }}</li>
-            </ul>
+            <hr>
+            <p><strong>Name:</strong> {{ extracted.Name }}</p>
+            <p><strong>Email:</strong> {{ extracted.Email }}</p>
+            <p><strong>Phone:</strong> {{ extracted.Phone }}</p>
+            
+            <div class="section-title">Skills:</div>
+            {% if extracted.Skills %}
+                <ul class="skills-list">
+                    {% for skill in extracted.Skills %}
+                        <li>{{ skill }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No skills found.</p>
+            {% endif %}
+
+            <div class="section-title">Experience:</div>
+            <p>{{ extracted.Experience }}</p>
         </div>
         {% endif %}
 
-        {% if qualification_result %}
-        <div class="alert alert-info mt-3">
-            <h5>Qualification Result: {{ qualification_result }}</h5>
-            <p><strong>Matched Skills:</strong> {{ matched | join(', ') }}</p>
-            <p><strong>Missing Skills:</strong> {{ missing | join(', ') if missing else 'None' }}</p>
+        {% if experience_summary %}
+        <div class="alert alert-info mt-4">
+            <h5>Experience Summary</h5>
+            <p>{{ experience_summary }}</p>
         </div>
         {% endif %}
 
@@ -78,8 +98,8 @@
         <div class="results mt-4" id="resumesTable">
             <h3>All Parsed Resumes</h3>
             {% if all_data %}
-                <table class="table table-striped">
-                    <thead>
+                <table class="table table-hover table-striped">
+                    <thead class="table-dark">
                         <tr>
                             <th>Name</th>
                             <th>Email</th>
@@ -94,7 +114,13 @@
                             <td>{{ row[1] }}</td>
                             <td>{{ row[2] }}</td>
                             <td>{{ row[3] }}</td>
-                            <td>{{ row[4] }}</td>
+                            <td>
+                                <ul class="skills-list">
+                                    {% for skill in row[4].split(',') %}
+                                        <li>{{ skill.strip() }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
                             <td>{{ row[5] }}</td>
                         </tr>
                         {% endfor %}
