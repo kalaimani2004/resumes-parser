@@ -4,6 +4,9 @@ from pdf_reader import extract_text_from_pdf
 from extractors import extract_email, extract_phone, extract_skills, extract_name, extract_experience
 from database import init_db, insert_data, fetch_all
 from utils import SKILL_LIST, SKIP_KEYWORDS
+from summary import experience_summary  
+
+openai_api_key = os.getenv("OPENAI_API_KEY")
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'resumes'
@@ -17,12 +20,12 @@ init_db()
 def index():
     extracted_data = None
     verification_result = None
+    summary_text = None
 
     if request.method == 'POST':
         if 'resume' not in request.files:
             return "No file part", 400
         file = request.files['resume']
-        job_qualifications = request.form.get('job_qualifications', '').strip()
 
         if file.filename == '':
             return "No selected file", 400
@@ -36,6 +39,8 @@ def index():
             phone = extract_phone(raw_text)
             skills = extract_skills(raw_text, SKILL_LIST)
             experience = extract_experience(raw_text)
+            summary_text = experience_summary(raw_text)  
+
 
             insert_data(name, email, phone, skills, experience)
 
@@ -44,7 +49,8 @@ def index():
                 "Email": email,
                 "Phone": phone,
                 "Skills": skills,
-                "Experience": experience
+                "Experience": experience,
+                "Summary": summary_text
             }
 
         else:
@@ -54,6 +60,7 @@ def index():
 
     return render_template('index.html',
                            extracted=extracted_data,
+                           experience_summary=summary_text,
                            all_data=all_data,
                            verification=verification_result
                            )

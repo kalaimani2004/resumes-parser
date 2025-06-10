@@ -1,6 +1,10 @@
 import re
 from dateutil import parser as date_parser
 from datetime import datetime
+import spacy
+
+# Load the spaCy English model
+nlp = spacy.load("en_core_web_sm")
 
 def extract_email(text):
     match = re.search(r'[\w\.-]+@[\w\.-]+\.\w+', text)
@@ -11,7 +15,8 @@ def extract_phone(text):
     return match.group() if match else "Not Found"
 
 def extract_name(text):
-    # Split into lines and clean
+    
+   # Split into lines and clean
     lines = [line.strip() for line in text.split('\n') if line.strip()]
     
     # Keywords to skip (common degree/edu words)
